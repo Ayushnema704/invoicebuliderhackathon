@@ -58,7 +58,11 @@ export interface InvoicePreviewProps {
 }
 
 export interface LandingProps {
-  onLogin: () => void;
+  onLogin?: () => void;
   darkMode: boolean;
   setDarkMode: (value: boolean) => void;
+}
+
+export interface LoginProps {
+  darkMode: boolean;
 } 

@@ -20,6 +20,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
   return (
     <div className="grid grid-cols-12 gap-4 items-start p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
       <div className="col-span-5">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
         <input
           type="text"
           className={`w-full rounded border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400 ${errors[`description-${index}`] ? 'border-red-500 dark:border-red-500' : ''}`}
@@ -34,6 +35,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         )}
       </div>
       <div className="col-span-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Qty</label>
         <input
           type="number"
           min="0"
@@ -50,6 +52,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         )}
       </div>
       <div className="col-span-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Unit Price</label>
         <input
           type="number"
           min="0"
@@ -66,6 +69,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         )}
       </div>
       <div className="col-span-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tax (%)</label>
         <input
           type="number"
           min="0"
@@ -83,6 +87,7 @@ const InvoiceItem: React.FC<InvoiceItemProps> = ({
         )}
       </div>
       <div className="col-span-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Discount (%)</label>
         <input
           type="number"
           min="0"
