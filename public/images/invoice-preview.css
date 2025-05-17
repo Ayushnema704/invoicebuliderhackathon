@@ -1,0 +1,41 @@
+/* Invoice Preview CSS - This will be a placeholder that will be converted to an image */
+.invoice-preview {
+  width: 600px;
+  height: 400px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.invoice-preview-header {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.invoice-preview-items {
+  margin-top: 20px;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.invoice-preview-items th, 
+.invoice-preview-items td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.invoice-preview-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.invoice-preview-total {
+  font-weight: bold;
+  font-size: 18px;
+}

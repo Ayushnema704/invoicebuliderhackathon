@@ -1,126 +1,117 @@
-import { useRef } from 'react';
-// You can install jsPDF/html2canvas for PDF export if needed
-// import jsPDF from 'jspdf';
-// import html2canvas from 'html2canvas';
+import React from 'react';
+import { InvoicePreviewProps } from '../types';
 
-interface InvoicePreviewProps {
-  invoice: any;
-  items: any[];
-  currencySymbol: string;
-  subtotal: number;
-  totalTax: number;
-  totalDiscount: number;
-  total: number;
-  onPrint: () => void;
-  onExportPDF?: () => void;
-  showModal: boolean;
-  setShowModal: (val: boolean) => void;
-}
-
-const InvoicePreview = ({
+const InvoicePreview: React.FC<InvoicePreviewProps> = ({
   invoice,
   items,
   currencySymbol,
   subtotal,
   totalTax,
   totalDiscount,
-  total,
+  totalAmount,
   onPrint,
-  onExportPDF,
-  showModal,
-  setShowModal,
+  onExport,
+  darkMode,
 }) => {
-  const previewRef = useRef(null as HTMLDivElement | null);
-
   return (
-    <>
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 animate-fade-in">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 w-full max-w-2xl relative" ref={previewRef}>
-            <button
-              className="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-2xl font-bold"
-              onClick={() => setShowModal(false)}
-              aria-label="Close preview"
-            >
-              ×
-            </button>
-            <div className="mb-4 border-b pb-2">
-              <div className="text-2xl font-bold dark:text-white">{invoice.companyName || 'Company Name'}</div>
-              <div className="text-md text-gray-600 dark:text-gray-300">{invoice.companyAddress}</div>
-            </div>
-            <div className="flex items-center gap-4 mb-4">
-              {invoice.logo && (
-                <img src={invoice.logo} alt="Logo" className="h-14 w-14 object-contain rounded" />
-              )}
-              <div>
-                <div className="font-bold text-lg dark:text-white">{invoice.companyContact}</div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div><strong>Name:</strong> {invoice.name || '-'}</div>
-              <div><strong>Date:</strong> {invoice.date ? new Date(invoice.date).toLocaleDateString() : '-'}</div>
-              {invoice.gstin && <div><strong>GSTIN:</strong> {invoice.gstin}</div>}
-            </div>
-            <table className="w-full mb-4 border rounded">
-              <thead>
-                <tr className="bg-gray-100 dark:bg-gray-700 text-left">
-                  <th className="py-2 px-2">Description</th>
-                  <th className="py-2 px-2">Quantity</th>
-                  <th className="py-2 px-2">Unit Price</th>
-                  <th className="py-2 px-2">Tax (%)</th>
-                  <th className="py-2 px-2">Discount (%)</th>
-                  <th className="py-2 px-2">Line Total</th>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 border border-gray-200 dark:border-gray-700 overflow-auto max-h-[800px]">
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          {invoice.logo && (
+            <img src={invoice.logo} alt="Company Logo" className="h-16 mb-4" />
+          )}
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{invoice.companyName}</h2>
+          <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line">{invoice.companyAddress}</p>
+          <p className="text-gray-600 dark:text-gray-300">{invoice.companyContact}</p>
+          {invoice.gstin && <p className="text-gray-600 dark:text-gray-300">GSTIN: {invoice.gstin}</p>}
+        </div>
+        <div className="text-right">
+          <h1 className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">INVOICE</h1>
+          <p className="text-gray-600 dark:text-gray-300">Invoice #: {invoice.invoiceNumber}</p>
+          <p className="text-gray-600 dark:text-gray-300">Date: {invoice.date}</p>
+          <p className="text-gray-600 dark:text-gray-300">Due Date: {invoice.dueDate}</p>
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Bill To:</h3>
+        <p className="text-gray-600 dark:text-gray-300 font-medium">{invoice.clientName}</p>
+        <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line">{invoice.clientAddress}</p>
+        <p className="text-gray-600 dark:text-gray-300">{invoice.clientContact}</p>
+      </div>
+
+      <div className="mb-8">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+              <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-300 font-medium">Description</th>
+              <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-300 font-medium">Qty</th>
+              <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-300 font-medium">Unit Price</th>
+              <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-300 font-medium">Tax %</th>
+              <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-300 font-medium">Discount %</th>
+              <th className="text-right py-3 px-4 text-gray-600 dark:text-gray-300 font-medium">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, index) => {
+              const quantity = Number(item.quantity);
+              const unitPrice = Number(item.unitPrice);
+              const tax = Number(item.tax);
+              const discount = Number(item.discount);
+              const amount = quantity * unitPrice;
+              const taxAmount = (amount * tax) / 100;
+              const discountAmount = (amount * discount) / 100;
+              const total = amount + taxAmount - discountAmount;
+
+              return (
+                <tr key={index} className={`${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700/50'} border-b border-gray-200 dark:border-gray-700`}>
+                  <td className="py-3 px-4 text-gray-800 dark:text-gray-200">{item.description || '-'}</td>
+                  <td className="py-3 px-4 text-right text-gray-800 dark:text-gray-200">{quantity}</td>
+                  <td className="py-3 px-4 text-right text-gray-800 dark:text-gray-200">{currencySymbol}{unitPrice.toFixed(2)}</td>
+                  <td className="py-3 px-4 text-right text-gray-800 dark:text-gray-200">{tax.toFixed(1)}%</td>
+                  <td className="py-3 px-4 text-right text-gray-800 dark:text-gray-200">{discount.toFixed(1)}%</td>
+                  <td className="py-3 px-4 text-right font-medium text-gray-800 dark:text-gray-200">{currencySymbol}{total.toFixed(2)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {items.map((item, idx) => {
-                  const qty = parseFloat(item.quantity) || 0;
-                  const price = parseFloat(item.unitPrice) || 0;
-                  const tax = parseFloat(item.tax) || 0;
-                  const discount = parseFloat(item.discount) || 0;
-                  const lineSubtotal = qty * price;
-                  const lineTax = (tax / 100) * lineSubtotal;
-                  const lineDiscount = (discount / 100) * lineSubtotal;
-                  const lineTotal = lineSubtotal + lineTax - lineDiscount;
-                  return (
-                    <tr key={idx} className="border-b last:border-0">
-                      <td className="py-2 px-2">{item.description}</td>
-                      <td className="py-2 px-2">{item.quantity}</td>
-                      <td className="py-2 px-2">{currencySymbol}{item.unitPrice}</td>
-                      <td className="py-2 px-2">{item.tax}</td>
-                      <td className="py-2 px-2">{item.discount}</td>
-                      <td className="py-2 px-2 font-semibold">{currencySymbol}{lineTotal.toFixed(2)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <div className="flex flex-col items-end space-y-1">
-              <div><span className="font-semibold">Subtotal:</span> {currencySymbol}{subtotal.toFixed(2)}</div>
-              <div><span className="font-semibold">Total Tax:</span> {currencySymbol}{totalTax.toFixed(2)}</div>
-              <div><span className="font-semibold">Total Discount:</span> {currencySymbol}{totalDiscount.toFixed(2)}</div>
-              <div className="text-lg font-bold"><span>Total:</span> {currencySymbol}{total.toFixed(2)}</div>
-            </div>
-            <div className="flex gap-4 mt-6 justify-end">
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-all"
-                onClick={onPrint}
-              >
-                Print Invoice
-              </button>
-              {onExportPDF && (
-                <button
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-all"
-                  onClick={onExportPDF}
-                >
-                  Export to PDF
-                </button>
-              )}
-            </div>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex justify-end mb-8">
+        <div className="w-64">
+          <div className="flex justify-between py-2">
+            <span className="text-gray-600 dark:text-gray-300">Subtotal:</span>
+            <span className="text-gray-800 dark:text-gray-200">{currencySymbol}{subtotal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between py-2">
+            <span className="text-gray-600 dark:text-gray-300">Tax:</span>
+            <span className="text-gray-800 dark:text-gray-200">{currencySymbol}{totalTax.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between py-2">
+            <span className="text-gray-600 dark:text-gray-300">Discount:</span>
+            <span className="text-gray-800 dark:text-gray-200">{currencySymbol}{totalDiscount.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between py-3 mt-1 border-t border-gray-200 dark:border-gray-700">
+            <span className="font-bold text-lg text-gray-900 dark:text-white">Total:</span>
+            <span className="font-bold text-lg text-blue-600 dark:text-blue-400">{currencySymbol}{totalAmount.toFixed(2)}</span>
           </div>
         </div>
+      </div>
+
+      {/* Print and Export buttons moved to the InvoiceApp component */}
+
+      {invoice.notes && (
+        <div className="mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Notes:</h3>
+          <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line">{invoice.notes}</p>
+        </div>
       )}
-    </>
+
+      <div className="mt-8 text-center">
+        <p className="text-gray-600 dark:text-gray-400 font-medium">Thank you for your business!</p>
+      </div>
+    </div>
   );
 };
 
